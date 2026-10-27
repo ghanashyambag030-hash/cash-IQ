@@ -28,8 +28,8 @@ jobs:
       - name: Install Capacitor
         run: |
           npm init -y
-          npm install @capacitor/core @capacitor/android
-          npm install --save-dev @capacitor/cli @capacitor/assets
+          npm install @capacitor/core@7 @capacitor/android@7
+          npm install --save-dev @capacitor/cli@7 @capacitor/assets
 
       - name: Prepare app files
         run: |
@@ -48,6 +48,26 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Align Kotlin dependencies
+        run: |
+          cat >> android/build.gradle <<'EOF'
+
+          allprojects {
+              configurations.configureEach {
+                  resolutionStrategy.eachDependency { details ->
+                      if (details.requested.group == 'org.jetbrains.kotlin' &&
+                          details.requested.name in [
+                              'kotlin-stdlib',
+                              'kotlin-stdlib-jdk7',
+                              'kotlin-stdlib-jdk8'
+                          ]) {
+                          details.useVersion '1.8.22'
+                      }
+                  }
+              }
+          }
+          EOF
 
       - name: Generate app icon
         run: npx capacitor-assets generate --android
