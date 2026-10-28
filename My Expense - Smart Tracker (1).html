@@ -1,0 +1,2391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#060d1f" id="metaThemeColor" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="My Expense" />
+  <title>My Expense</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-main: #060d1f;
+      --bg-grad-top: #0b1838;
+      --bg-grad-bot: #040916;
+      --card-bg: rgba(19, 29, 53, 0.78);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --card-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.08);
+      --text-primary: #ffffff;
+      --text-secondary: #8395b8;
+      --accent-green: #00e676;
+      --accent-pink: #ff2e93;
+      --accent-blue: #3b82f6;
+      --accent-purple: #a855f7;
+      --divider: rgba(255, 255, 255, 0.06);
+      --modal-bg: #0e1933;
+      --input-bg: rgba(255, 255, 255, 0.06);
+      --nav-bg: rgba(10, 18, 36, 0.94);
+    }
+
+    body.light-mode {
+      --bg-main: #edf2fa;
+      --bg-grad-top: #ffffff;
+      --bg-grad-bot: #dde6f5;
+      --card-bg: rgba(255, 255, 255, 0.9);
+      --card-border: rgba(15, 30, 65, 0.1);
+      --card-inner-glow: inset 0 1px 1px rgba(255, 255, 255, 0.8);
+      --text-primary: #0b1730;
+      --text-secondary: #5a6e94;
+      --divider: rgba(15, 30, 65, 0.08);
+      --modal-bg: #ffffff;
+      --input-bg: rgba(15, 30, 65, 0.05);
+      --nav-bg: rgba(255, 255, 255, 0.95);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 25%, var(--bg-grad-top) 0%, var(--bg-main) 55%, var(--bg-grad-bot) 100%);
+      color: var(--text-primary);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      overflow-x: hidden;
+      transition: background 0.3s ease, color 0.3s ease;
+    }
+
+    /* Main Container - NO FAKE STATUS BAR, clean top spacing */
+    .app-container {
+      width: 100%;
+      max-width: 430px;
+      min-height: 100vh;
+      padding: max(14px, env(safe-area-inset-top, 14px)) 16px 100px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      position: relative;
+    }
+
+    /* OriginOS Frosted Blur + Glow Click Effect */
+    .blur-click {
+      position: relative;
+      overflow: hidden;
+      cursor: pointer;
+      user-select: none;
+      transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), filter 0.22s ease, box-shadow 0.22s ease;
+    }
+    .blur-click:active {
+      transform: scale(0.96);
+      filter: blur(0.6px) brightness(1.15);
+    }
+    .origin-ripple {
+      position: absolute;
+      border-radius: 50%;
+      pointer-events: none;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.6) 0%, rgba(0, 230, 118, 0.3) 45%, transparent 72%);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      transform: scale(0);
+      animation: originRippleAnim 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+      z-index: 20;
+    }
+    @keyframes originRippleAnim {
+      0% { transform: scale(0); opacity: 0.95; }
+      70% { opacity: 0.5; }
+      100% { transform: scale(3.6); opacity: 0; }
+    }
+
+    /* Header matching screenshot 100% */
+    .app-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 2px 0;
+    }
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .wallet-icon-box {
+      width: 50px;
+      height: 50px;
+      border-radius: 15px;
+      background: rgba(16, 32, 62, 0.85);
+      border: 1px solid rgba(0, 230, 118, 0.22);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 6px 18px rgba(0, 230, 118, 0.18), inset 0 1px 1px rgba(255, 255, 255, 0.12);
+      flex-shrink: 0;
+    }
+    .brand-title {
+      font-size: 23px;
+      font-weight: 800;
+      letter-spacing: -0.4px;
+      line-height: 1.15;
+      color: var(--text-primary);
+    }
+    .brand-title span {
+      color: #00e676;
+    }
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+      margin-top: 2px;
+      letter-spacing: 0.2px;
+    }
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .circle-icon-btn {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      background: rgba(22, 34, 62, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    }
+    body.light-mode .circle-icon-btn {
+      background: #ffffff;
+      border-color: rgba(15, 30, 65, 0.12);
+    }
+    .pink-dot {
+      position: absolute;
+      top: 9px;
+      right: 10px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: #ff2e93;
+      box-shadow: 0 0 8px #ff2e93;
+    }
+
+    /* Glass Cards */
+    .glass-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32), var(--card-inner-glow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 22px;
+      padding: 18px 20px;
+    }
+
+    /* Total Balance Card */
+    .balance-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+    }
+    .balance-label {
+      font-size: 15px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+    .period-select-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+    }
+    .period-pill {
+      appearance: none;
+      -webkit-appearance: none;
+      background: rgba(10, 18, 36, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      padding: 6px 28px 6px 14px;
+      border-radius: 999px;
+      outline: none;
+      cursor: pointer;
+    }
+    body.light-mode .period-pill {
+      background: rgba(15, 30, 65, 0.07);
+      border-color: rgba(15, 30, 65, 0.15);
+    }
+    .period-chevron {
+      position: absolute;
+      right: 11px;
+      pointer-events: none;
+      color: var(--text-secondary);
+    }
+    .balance-body {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 10px;
+    }
+    .balance-amount {
+      font-size: 33px;
+      font-weight: 800;
+      letter-spacing: -0.8px;
+      line-height: 1.15;
+      margin-bottom: 8px;
+    }
+    .balance-sub {
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .delta-val {
+      color: var(--accent-green);
+      font-weight: 700;
+    }
+    .delta-val.negative {
+      color: var(--accent-pink);
+    }
+    .sparkline-box {
+      width: 142px;
+      height: 68px;
+      flex-shrink: 0;
+    }
+
+    /* Dual Neon Glowing Pill Buttons matching screenshot 100% */
+    .dual-action-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin: 4px 0 2px;
+    }
+    .action-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .glow-pill-outer {
+      width: 100%;
+      padding: 3px;
+      border-radius: 999px;
+      position: relative;
+    }
+    .glow-pill-outer.income-outer {
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.55), rgba(0, 200, 83, 0.2));
+      box-shadow: 0 0 26px rgba(0, 230, 118, 0.45), 0 0 50px rgba(0, 230, 118, 0.18);
+    }
+    .glow-pill-outer.expense-outer {
+      background: linear-gradient(135deg, rgba(255, 64, 154, 0.55), rgba(255, 46, 147, 0.2));
+      box-shadow: 0 0 26px rgba(255, 46, 147, 0.45), 0 0 50px rgba(255, 46, 147, 0.18);
+    }
+    .glow-pill-btn {
+      width: 100%;
+      height: 62px;
+      border-radius: 999px;
+      border: 1.5px solid rgba(255, 255, 255, 0.35);
+      display: flex;
+      align-items: center;
+      padding: 7px 14px 7px 9px;
+      gap: 12px;
+      color: #ffffff;
+      font-size: 18px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .glow-pill-btn.income-btn {
+      background: linear-gradient(90deg, #10b968 0%, #20e378 100%);
+    }
+    .glow-pill-btn.expense-btn {
+      background: linear-gradient(90deg, #eb2f83 0%, #ff559f 100%);
+    }
+    .pill-inner-circle {
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .income-btn .pill-inner-circle {
+      background: rgba(6, 52, 30, 0.72);
+      color: #52ff9f;
+    }
+    .expense-btn .pill-inner-circle {
+      background: rgba(66, 11, 38, 0.72);
+      color: #ff7ab8;
+    }
+    .action-caption {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 500;
+    }
+
+    /* Recent Transactions Section */
+    .tx-card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      gap: 8px;
+    }
+    .section-heading {
+      font-size: 17.5px;
+      font-weight: 700;
+      letter-spacing: -0.3px;
+    }
+    .tx-header-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .clear-all-pill {
+      background: rgba(255, 46, 147, 0.1);
+      border: 1px solid rgba(255, 46, 147, 0.32);
+      color: #ff6ca8;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 5px 12px;
+      border-radius: 999px;
+    }
+    .view-all-link {
+      background: none;
+      border: none;
+      color: #4da3ff;
+      font-size: 13.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    /* Transaction Row matching screenshot */
+    .tx-list-wrap {
+      display: flex;
+      flex-direction: column;
+    }
+    .tx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 2px;
+      border-bottom: 1px solid var(--divider);
+      gap: 10px;
+    }
+    .tx-row:last-child {
+      border-bottom: none;
+      padding-bottom: 4px;
+    }
+    .tx-left {
+      display: flex;
+      align-items: center;
+      gap: 13px;
+      min-width: 0;
+      flex: 1;
+    }
+    .tx-circle-badge {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #ffffff;
+      font-size: 20px;
+      flex-shrink: 0;
+      overflow: hidden;
+    }
+    .tx-circle-badge.expense-badge {
+      background: linear-gradient(135deg, #ff3385, #ff1e74);
+      box-shadow: 0 0 16px rgba(255, 46, 147, 0.45);
+    }
+    .tx-circle-badge.income-badge {
+      background: linear-gradient(135deg, #00d968, #00b353);
+      box-shadow: 0 0 16px rgba(0, 230, 118, 0.45);
+    }
+    .tx-details {
+      min-width: 0;
+      flex: 1;
+    }
+    .tx-item-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text-primary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tx-item-cat {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .tx-item-date {
+      font-size: 11px;
+      color: var(--text-secondary);
+      opacity: 0.78;
+      margin-top: 1px;
+    }
+    .tx-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-shrink: 0;
+    }
+    .tx-item-amount {
+      font-size: 15px;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+    }
+    .tx-item-amount.expense-amt {
+      color: #ff388c;
+    }
+    .tx-item-amount.income-amt {
+      color: #00e676;
+    }
+    .tx-trash-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      background: rgba(255, 46, 147, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      color: #88a0cc;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    /* Bottom 4-Column Summary Strip Card */
+    .summary-strip-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28), var(--card-inner-glow);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 20px;
+      padding: 15px 6px;
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+    }
+    .summary-col {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      padding: 2px 4px;
+      border-right: 1px solid var(--divider);
+    }
+    .summary-col:last-child {
+      border-right: none;
+    }
+    .sum-circle-icon {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+    .sum-circle-icon.inc-icon {
+      background: #00e676;
+      color: #042b16;
+      box-shadow: 0 0 14px rgba(0, 230, 118, 0.5);
+    }
+    .sum-circle-icon.exp-icon {
+      background: #ff2e93;
+      color: #36041c;
+      box-shadow: 0 0 14px rgba(255, 46, 147, 0.5);
+    }
+    .sum-circle-icon.sav-icon {
+      background: rgba(59, 130, 246, 0.22);
+      color: #ff6ca8;
+      border: 1px solid rgba(59, 130, 246, 0.35);
+    }
+    .sum-circle-icon.bud-icon {
+      background: rgba(168, 85, 247, 0.22);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.35);
+    }
+    .sum-col-label {
+      font-size: 10px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+      line-height: 1.2;
+      font-weight: 500;
+    }
+    .sum-col-value {
+      font-size: 12.5px;
+      font-weight: 800;
+      letter-spacing: -0.3px;
+    }
+
+    /* Bottom Navigation Bar matching screenshot 100% */
+    .bottom-navbar {
+      position: fixed;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 100%;
+      max-width: 430px;
+      background: var(--nav-bg);
+      border-top: 1px solid var(--card-border);
+      padding: 10px 12px max(12px, env(safe-area-inset-bottom, 12px));
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      backdrop-filter: blur(22px);
+      -webkit-backdrop-filter: blur(22px);
+      z-index: 60;
+    }
+    .nav-tab {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      font-size: 11px;
+      font-weight: 500;
+      padding: 4px 0;
+      position: relative;
+    }
+    .nav-tab.active {
+      color: var(--accent-green);
+      font-weight: 600;
+    }
+    .nav-active-bar {
+      width: 24px;
+      height: 3.5px;
+      border-radius: 99px;
+      background: transparent;
+      margin-top: 2px;
+      transition: all 0.25s ease;
+    }
+    .nav-tab.active .nav-active-bar {
+      background: var(--accent-green);
+      box-shadow: 0 0 10px var(--accent-green);
+    }
+
+    /* Modals */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(3, 8, 22, 0.78);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 120;
+      animation: modalFadeIn 0.2s ease;
+    }
+    .modal-overlay.open {
+      display: flex;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.96); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    .modal-sheet {
+      width: 100%;
+      max-width: 405px;
+      max-height: 88vh;
+      overflow-y: auto;
+      background: var(--modal-bg);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 24px;
+      padding: 20px;
+      color: var(--text-primary);
+      box-shadow: 0 22px 55px rgba(0, 0, 0, 0.6);
+    }
+    .modal-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .modal-heading {
+      font-size: 18px;
+      font-weight: 800;
+    }
+    .modal-close-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* Forms & Calendar Picker */
+    .field-group {
+      margin-bottom: 13px;
+    }
+    .field-label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-weight: 600;
+      margin-bottom: 6px;
+    }
+    .field-input, .field-select {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 13px;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 14px;
+      outline: none;
+    }
+    .field-select option {
+      background: #0e1933;
+      color: #ffffff;
+    }
+    body.light-mode .field-select option {
+      background: #ffffff;
+      color: #0b1730;
+    }
+
+    /* Custom Date Input Row with Calendar Button */
+    .date-picker-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .date-display-btn {
+      flex: 1;
+      padding: 12px 14px;
+      border-radius: 13px;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 600;
+      text-align: left;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .calendar-icon-btn {
+      width: 46px;
+      height: 46px;
+      border-radius: 13px;
+      border: 1px solid rgba(0, 230, 118, 0.35);
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.2), rgba(0, 210, 255, 0.15));
+      color: #00e676;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      box-shadow: 0 4px 12px rgba(0, 230, 118, 0.18);
+    }
+
+    /* Visual Calendar Modal Grid */
+    .cal-header-nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 12px;
+      background: var(--input-bg);
+      padding: 8px 10px;
+      border-radius: 14px;
+    }
+    .cal-nav-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-weight: 700;
+    }
+    .cal-month-title {
+      font-size: 15px;
+      font-weight: 800;
+    }
+    .cal-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      text-align: center;
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .cal-days-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+    .cal-day-cell {
+      height: 38px;
+      border-radius: 10px;
+      border: 1px solid transparent;
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 13px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .cal-day-cell.empty {
+      background: transparent;
+      pointer-events: none;
+    }
+    .cal-day-cell.today {
+      border-color: var(--accent-blue);
+      color: #60a5fa;
+    }
+    .cal-day-cell.selected {
+      background: linear-gradient(135deg, #00e676, #00b862);
+      color: #042814;
+      font-weight: 800;
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.45);
+    }
+
+    /* Logo Picker Grid */
+    .logo-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      max-height: 125px;
+      overflow-y: auto;
+      padding: 4px 2px;
+    }
+    .logo-tile {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: var(--input-bg);
+      border: 2px solid transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      overflow: hidden;
+    }
+    .logo-tile.selected {
+      border-color: var(--accent-green);
+      background: rgba(0, 230, 118, 0.14);
+      box-shadow: 0 0 12px rgba(0, 230, 118, 0.35);
+    }
+
+    /* Primary & Action Buttons */
+    .primary-action-btn {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 14px;
+      border: none;
+      font-size: 15px;
+      font-weight: 700;
+      color: #ffffff;
+      background: linear-gradient(135deg, #00e676, #00b862);
+      box-shadow: 0 6px 20px rgba(0, 230, 118, 0.32);
+    }
+    .primary-action-btn.pink-btn {
+      background: linear-gradient(135deg, #ff2e93, #d81b78);
+      box-shadow: 0 6px 20px rgba(255, 46, 147, 0.32);
+    }
+    .secondary-action-btn {
+      width: 100%;
+      padding: 13px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--card-border);
+      background: var(--input-bg);
+      color: var(--text-primary);
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    /* EQUAL SIZED CONFIRMATION BUTTONS ROW */
+    .confirm-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-top: 18px;
+    }
+    .confirm-equal-btn {
+      width: 100%;
+      height: 48px;
+      border-radius: 14px;
+      font-size: 14.5px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: none;
+    }
+    .confirm-cancel-btn {
+      background: rgba(255, 255, 255, 0.09);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      color: var(--text-primary);
+    }
+    body.light-mode .confirm-cancel-btn {
+      background: rgba(15, 30, 65, 0.08);
+      border-color: rgba(15, 30, 65, 0.18);
+    }
+    .confirm-delete-btn {
+      background: linear-gradient(135deg, #ff2e93, #d81b78);
+      color: #ffffff;
+      box-shadow: 0 6px 18px rgba(255, 46, 147, 0.38);
+    }
+
+    /* Filter Summary Box inside View All Modal */
+    .filter-summary-banner {
+      background: linear-gradient(135deg, rgba(0, 230, 118, 0.12), rgba(255, 46, 147, 0.12));
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      margin-top: 12px;
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      text-align: center;
+    }
+
+    /* Settings Cards */
+    .settings-group {
+      background: var(--input-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+    .settings-group-title {
+      font-size: 13.5px;
+      font-weight: 700;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .mini-btn-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+    .mini-btn {
+      padding: 10px 12px;
+      border-radius: 11px;
+      border: 1px solid var(--card-border);
+      background: var(--card-bg);
+      color: var(--text-primary);
+      font-size: 12.5px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    /* Toast Notification */
+    .toast-banner {
+      position: fixed;
+      top: 18px;
+      left: 50%;
+      transform: translateX(-50%) translateY(-25px);
+      background: rgba(12, 24, 48, 0.96);
+      border: 1px solid var(--accent-green);
+      color: #ffffff;
+      padding: 10px 20px;
+      border-radius: 999px;
+      font-size: 13px;
+      font-weight: 600;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.28s ease;
+      z-index: 300;
+      box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
+      white-space: nowrap;
+    }
+    .toast-banner.show {
+      opacity: 1;
+      transform: translateX(-50%) translateY(0);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Toast Notification -->
+  <div class="toast-banner" id="toastBanner">Saved!</div>
+
+  <!-- Main App Container (Starts cleanly at Header, NO fake status bar) -->
+  <main class="app-container">
+
+    <!-- HEADER (100% Matching Screenshot) -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="wallet-icon-box blur-click" onclick="openModal('quickExportModal')" title="App Info & Code Copy">
+          <svg width="32" height="32" viewBox="0 0 64 64" fill="none">
+            <defs>
+              <linearGradient id="wFlap" x1="8" y1="8" x2="52" y2="32" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00f58a"/>
+                <stop offset="100%" stop-color="#00b862"/>
+              </linearGradient>
+              <linearGradient id="wBody" x1="6" y1="18" x2="58" y2="56" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#00e676"/>
+                <stop offset="55%" stop-color="#00ccb0"/>
+                <stop offset="100%" stop-color="#0095ff"/>
+              </linearGradient>
+            </defs>
+            <path d="M12 20C12 15.58 15.58 12 20 12H44C47.31 12 50 14.69 50 18V22H12V20Z" fill="url(#wFlap)"/>
+            <rect x="8" y="18" width="48" height="36" rx="10" fill="url(#wBody)"/>
+            <rect x="38" y="30" width="18" height="12" rx="6" fill="#091933"/>
+            <circle cx="44" cy="36" r="3" fill="#00e676"/>
+          </svg>
+        </div>
+        <div>
+          <h1 class="brand-title">My <span>Expense</span></h1>
+          <div class="brand-subtitle">Track • Plan • Save</div>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <button class="circle-icon-btn blur-click" onclick="openModal('quickExportModal')" aria-label="Notifications & Export">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+          </svg>
+          <span class="pink-dot"></span>
+        </button>
+        <button class="circle-icon-btn blur-click" onclick="openModal('settingsModal')" aria-label="Settings">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <!-- TOTAL BALANCE CARD (With "This Month v" Selector) -->
+    <section class="glass-card blur-click">
+      <div class="balance-header">
+        <span class="balance-label">Total Balance</span>
+        <div class="period-select-wrap">
+          <select id="dashboardPeriodSelect" class="period-pill" onchange="renderDashboard()">
+            <option value="THIS_MONTH">This Month</option>
+            <option value="LAST_MONTH">Last Month</option>
+            <option value="THIS_WEEK">This Week</option>
+            <option value="ALL_TIME">All Time</option>
+          </select>
+          <svg class="period-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+
+      <div class="balance-body">
+        <div>
+          <div class="balance-amount" id="mainBalanceAmount">₹ 0.00</div>
+          <div class="balance-sub">
+            <span class="delta-val" id="mainBalanceDelta">↑ +₹ 0.00</span>
+            <span style="color:var(--text-secondary);" id="mainBalancePeriodLabel">this month</span>
+          </div>
+        </div>
+
+        <div class="sparkline-box">
+          <svg viewBox="0 0 145 68" width="100%" height="100%">
+            <defs>
+              <linearGradient id="sparkAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="#00e676" stop-opacity="0.38"/>
+                <stop offset="100%" stop-color="#00e676" stop-opacity="0.0"/>
+              </linearGradient>
+              <filter id="glowLine" x="-20%" y="-20%" width="140%" height="140%">
+                <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+              </filter>
+            </defs>
+            <path d="M6,54 Q24,42 38,46 T74,34 T108,35 T135,12 L135,64 L6,64 Z" fill="url(#sparkAreaGrad)"/>
+            <path d="M6,54 Q24,42 38,46 T74,34 T108,35 T135,12" fill="none" stroke="#00e676" stroke-width="3.2" stroke-linecap="round" filter="url(#glowLine)"/>
+            <polyline points="124,11 136,11 134,23" fill="none" stroke="#00e676" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+    </section>
+
+    <!-- DUAL GLOWING PILL BUTTONS (Income & Expense) -->
+    <section class="dual-action-grid">
+      <div class="action-column">
+        <div class="glow-pill-outer income-outer blur-click" onclick="openTxModal('income')">
+          <button class="glow-pill-btn income-btn" type="button">
+            <span class="pill-inner-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"></line>
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </span>
+            <span>Income</span>
+          </button>
+        </div>
+        <span class="action-caption">Add money you receive</span>
+      </div>
+
+      <div class="action-column">
+        <div class="glow-pill-outer expense-outer blur-click" onclick="openTxModal('expense')">
+          <button class="glow-pill-btn expense-btn" type="button">
+            <span class="pill-inner-circle">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round">
+                <line x1="5" y1="12" x2="19" y2="12"></line>
+              </svg>
+            </span>
+            <span>Expense</span>
+          </button>
+        </div>
+        <span class="action-caption">Add money you spend</span>
+      </div>
+    </section>
+
+    <!-- RECENT TRANSACTIONS CARD -->
+    <section class="glass-card" style="padding: 16px 16px 12px;">
+      <div class="tx-card-header">
+        <h2 class="section-heading">Recent Transactions</h2>
+        <div class="tx-header-actions">
+          <button class="clear-all-pill blur-click" onclick="confirmClearAll()">Clear All</button>
+          <button class="view-all-link blur-click" onclick="openViewAllModal()">
+            <span>View All</span>
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="tx-list-wrap" id="recentTxList"></div>
+    </section>
+
+    <!-- BOTTOM 4-COLUMN SUMMARY STRIP -->
+    <section class="summary-strip-card">
+      <div class="summary-col">
+        <div class="sum-circle-icon inc-icon">↑</div>
+        <div class="sum-col-label" id="sumIncomeLabel">This Month Income</div>
+        <div class="sum-col-value" style="color:#00e676;" id="sumIncomeValue">₹ 0.00</div>
+      </div>
+      <div class="summary-col">
+        <div class="sum-circle-icon exp-icon">↓</div>
+        <div class="sum-col-label" id="sumExpenseLabel">This Month Expense</div>
+        <div class="sum-col-value" style="color:#ff388c;" id="sumExpenseValue">₹ 0.00</div>
+      </div>
+      <div class="summary-col">
+        <div class="sum-circle-icon sav-icon">👛</div>
+        <div class="sum-col-label">Savings</div>
+        <div class="sum-col-value" id="sumSavingsValue">₹ 0.00</div>
+      </div>
+      <div class="summary-col">
+        <div class="sum-circle-icon bud-icon">◔</div>
+        <div class="sum-col-label">Budget Used</div>
+        <div class="sum-col-value" style="color:#b77af7;" id="sumBudgetValue">0%</div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- BOTTOM NAVIGATION BAR (Exact SVG Icons from Screenshot) -->
+  <nav class="bottom-navbar">
+    <button class="nav-tab active blur-click" id="navTabHome" onclick="activateNav('home')">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 3L4 9v12h5v-7h6v7h5V9l-8-6z"/>
+      </svg>
+      <span>Home</span>
+      <div class="nav-active-bar"></div>
+    </button>
+
+    <button class="nav-tab blur-click" id="navTabTransactions" onclick="openViewAllModal()">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+        <line x1="4" y1="6" x2="20" y2="6"></line>
+        <line x1="4" y1="12" x2="20" y2="12"></line>
+        <line x1="4" y1="18" x2="20" y2="18"></line>
+      </svg>
+      <span>Transactions</span>
+      <div class="nav-active-bar"></div>
+    </button>
+
+    <button class="nav-tab blur-click" id="navTabReports" onclick="openReportsModal()">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline>
+        <polyline points="16 7 22 7 22 13"></polyline>
+      </svg>
+      <span>Reports</span>
+      <div class="nav-active-bar"></div>
+    </button>
+
+    <button class="nav-tab blur-click" id="navTabProfile" onclick="openModal('settingsModal')">
+      <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+      <span>Profile</span>
+      <div class="nav-active-bar"></div>
+    </button>
+  </nav>
+
+  <!-- =========================================================================
+       MODAL 1: ADD / EDIT TRANSACTION (With Calendar Icon & Past Month Picker)
+       ========================================================================= -->
+  <div class="modal-overlay" id="txModal">
+    <div class="modal-sheet">
+      <div class="modal-top">
+        <div class="modal-heading" id="txModalTitle">Add Transaction</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('txModal')">✕</button>
+      </div>
+
+      <input type="hidden" id="txEditId" value="" />
+      <input type="hidden" id="txTypeField" value="expense" />
+      <input type="hidden" id="txDateValue" value="" />
+
+      <div class="field-group">
+        <label class="field-label">Title / বিবরণ (যেমন: Bill, Diwali light, Food)</label>
+        <input type="text" class="field-input" id="txTitleInput" placeholder="Enter title..." />
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Amount (₹ টাকা)</label>
+        <input type="number" class="field-input" id="txAmountInput" placeholder="0.00" step="0.01" style="font-size:17px;font-weight:800;" />
+      </div>
+
+      <!-- Date Selector with Dedicated Calendar Logo Button -->
+      <div class="field-group">
+        <label class="field-label">Date (তারিখ সিলেক্ট করতে ক্যালেন্ডার আইকনে ক্লিক করুন)</label>
+        <div class="date-picker-row">
+          <button type="button" class="date-display-btn blur-click" onclick="openVisualCalendar('txDateValue', 'txDateFormattedText')">
+            <span id="txDateFormattedText">28 Oct 2026</span>
+            <span style="font-size:11px;color:var(--accent-green);">Change ▾</span>
+          </button>
+          <button type="button" class="calendar-icon-btn blur-click" onclick="openVisualCalendar('txDateValue', 'txDateFormattedText')" title="Open Calendar">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+              <line x1="16" y1="2" x2="16" y2="6"></line>
+              <line x1="8" y1="2" x2="8" y2="6"></line>
+              <line x1="3" y1="10" x2="21" y2="10"></line>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Category (ক্যাটাগরি)</label>
+        <select class="field-select" id="txCategorySelect"></select>
+      </div>
+
+      <div class="field-group">
+        <label class="field-label">Select Logo (লোগো সিলেক্ট করুন)</label>
+        <div class="logo-grid" id="txLogoGrid"></div>
+      </div>
+
+      <button type="button" class="primary-action-btn blur-click" id="txSaveBtn" onclick="saveTransaction()">Save Transaction</button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 2: VISUAL INTERACTIVE CALENDAR PICKER (Works 100% on Phone & APK)
+       ========================================================================= -->
+  <div class="modal-overlay" id="calendarModal" style="z-index: 210;">
+    <div class="modal-sheet" style="max-width: 360px;">
+      <div class="modal-top">
+        <div class="modal-heading">📅 Select Date (তারিখ)</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('calendarModal')">✕</button>
+      </div>
+
+      <div class="cal-header-nav">
+        <button type="button" class="cal-nav-btn blur-click" onclick="changeCalendarMonth(-1)">◀</button>
+        <div class="cal-month-title" id="calMonthYearLabel">October 2026</div>
+        <button type="button" class="cal-nav-btn blur-click" onclick="changeCalendarMonth(1)">▶</button>
+      </div>
+
+      <div class="cal-weekdays">
+        <span>Sun</span><span>Mon</span><span>Tue</span><span>Wed</span><span>Thu</span><span>Fri</span><span>Sat</span>
+      </div>
+      <div class="cal-days-grid" id="calDaysGrid"></div>
+
+      <div style="display:flex; gap:10px; margin-top:14px;">
+        <button type="button" class="secondary-action-btn blur-click" onclick="selectTodayInCalendar()">Today (আজ)</button>
+        <button type="button" class="primary-action-btn blur-click" onclick="closeModal('calendarModal')">Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 3: VIEW ALL TRANSACTIONS + SEARCH, DATE & CATEGORY FILTER + TOTALS
+       ========================================================================= -->
+  <div class="modal-overlay" id="viewAllModal">
+    <div class="modal-sheet" style="max-width: 420px; max-height: 92vh; display:flex; flex-direction:column;">
+      <div class="modal-top">
+        <div class="modal-heading">📜 All Transactions & Filter</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('viewAllModal')">✕</button>
+      </div>
+
+      <!-- Search Bar -->
+      <div class="field-group" style="margin-bottom:10px;">
+        <input type="text" class="field-input" id="filterSearchInput" placeholder="🔍 Search expense (যেমন: Bill, Food, Light)..." oninput="renderFilteredViewAll()" />
+      </div>
+
+      <!-- Date & Category Filters Row -->
+      <div style="display:grid; grid-template-columns: 1fr 1fr; gap:8px; margin-bottom:10px;">
+        <div>
+          <label class="field-label" style="font-size:11px;">📅 Filter by Date (তারিখ)</label>
+          <div style="display:flex; gap:5px;">
+            <input type="hidden" id="filterDateValue" value="" />
+            <button type="button" class="field-input blur-click" style="text-align:left; font-size:12.5px; padding:10px; flex:1; display:flex; align-items:center; justify-content:space-between;" onclick="openVisualCalendar('filterDateValue', 'filterDateText', true)">
+              <span id="filterDateText">All Dates</span>
+              <span>📅</span>
+            </button>
+          </div>
+        </div>
+
+        <div>
+          <label class="field-label" style="font-size:11px;">🏷️ Category (ক্যাটাগরি)</label>
+          <select class="field-select" id="filterCategorySelect" style="padding:10px; font-size:12.5px;" onchange="renderFilteredViewAll()">
+            <option value="ALL">All Categories</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Month Filter & Reset Row -->
+      <div style="display:grid; grid-template-columns: 1fr auto; gap:8px; margin-bottom:10px;">
+        <select class="field-select" id="filterMonthSelect" style="padding:9px 12px; font-size:12.5px;" onchange="renderFilteredViewAll()">
+          <option value="ALL">🗓️ All Months (সব মাস)</option>
+          <option value="THIS_MONTH">This Month (এই মাস)</option>
+          <option value="LAST_MONTH">Last Month (আগের মাস)</option>
+        </select>
+        <button type="button" class="mini-btn blur-click" onclick="resetViewAllFilters()" style="padding:9px 14px; color:#60a5fa;">Reset ↺</button>
+      </div>
+
+      <!-- Filtered Transactions Scrollable List -->
+      <div class="tx-list-wrap" id="viewAllTxList" style="flex:1; overflow-y:auto; min-height:180px; max-height:42vh; border-top:1px solid var(--divider); padding-top:6px;"></div>
+
+      <!-- Dynamic Filtered Totals Banner at Bottom -->
+      <div class="filter-summary-banner">
+        <div>
+          <div style="font-size:10.5px; color:var(--text-secondary);">Total Income</div>
+          <div style="font-size:13.5px; font-weight:800; color:#00e676; margin-top:2px;" id="filterTotalIncome">₹ 0.00</div>
+        </div>
+        <div style="border-left:1px solid var(--divider); border-right:1px solid var(--divider);">
+          <div style="font-size:10.5px; color:var(--text-secondary);">Total Expense (মোট খরচ)</div>
+          <div style="font-size:14px; font-weight:800; color:#ff388c; margin-top:2px;" id="filterTotalExpense">₹ 0.00</div>
+        </div>
+        <div>
+          <div style="font-size:10.5px; color:var(--text-secondary);">Items Found</div>
+          <div style="font-size:13.5px; font-weight:800; color:var(--text-primary); margin-top:2px;" id="filterTotalCount">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 4: REPORTS (Category-wise Expense Breakdown)
+       ========================================================================= -->
+  <div class="modal-overlay" id="reportsModal">
+    <div class="modal-sheet">
+      <div class="modal-top">
+        <div class="modal-heading">📊 Category Expense Report</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('reportsModal')">✕</button>
+      </div>
+      <div class="field-group">
+        <select class="field-select" id="reportPeriodSelect" onchange="renderCategoryReport()">
+          <option value="THIS_MONTH">This Month (এই মাসের হিসাব)</option>
+          <option value="LAST_MONTH">Last Month (আগের মাসের হিসাব)</option>
+          <option value="ALL_TIME">All Time (সম্পূর্ণ হিসাব)</option>
+        </select>
+      </div>
+      <div id="categoryReportContainer" style="display:flex; flex-direction:column; gap:10px; margin-top:10px;"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 5: EQUAL-SIZED DELETE CONFIRMATION DIALOG
+       ========================================================================= -->
+  <div class="modal-overlay" id="confirmDialogModal" style="z-index: 250;">
+    <div class="modal-sheet" style="max-width: 345px; text-align: center; padding: 24px 20px;">
+      <div style="width:54px; height:54px; border-radius:50%; background:rgba(255,46,147,0.15); color:#ff2e93; display:flex; align-items:center; justify-content:center; margin:0 auto 12px; font-size:26px;">
+        🗑
+      </div>
+      <h3 style="font-size:18px; font-weight:800; margin-bottom:8px;" id="confirmDialogTitle">Confirm Delete?</h3>
+      <p style="font-size:13px; color:var(--text-secondary); line-height:1.45;" id="confirmDialogDesc">
+        আপনি কি নিশ্চিতভাবে এটি ডিলিট করতে চান? ডিলিট করলে এটি আর ফিরে পাওয়া যাবে না।
+      </p>
+      <div class="confirm-btn-row">
+        <button type="button" class="confirm-equal-btn confirm-cancel-btn blur-click" onclick="closeModal('confirmDialogModal')">Cancel (না)</button>
+        <button type="button" class="confirm-equal-btn confirm-delete-btn blur-click" id="confirmDialogYesBtn">Delete (হ্যাঁ)</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 6: SETTINGS, BACKUP FIX, CATEGORY/LOGO MANAGER & 1-CLICK CODE COPY
+       ========================================================================= -->
+  <div class="modal-overlay" id="settingsModal">
+    <div class="modal-sheet">
+      <div class="modal-top">
+        <div class="modal-heading">⚙️ Settings & Backup</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('settingsModal')">✕</button>
+      </div>
+
+      <!-- 1-CLICK FULL HTML CODE COPY / DOWNLOAD FOR GITHUB -->
+      <div class="settings-group" style="border-color: rgba(0, 230, 118, 0.35); background: rgba(0, 230, 118, 0.06);">
+        <div class="settings-group-title" style="color:#00e676;">🚀 GitHub / APK Code Export (১-ক্লিকে কোড নিন)</div>
+        <p style="font-size:11.5px; color:var(--text-secondary); margin-bottom:10px; line-height:1.4;">
+          ফোনে কষ্ট করে কোড সিলেক্ট করতে হবে না! নিচের বাটনে ১ বার ক্লিক করলেই সম্পূর্ণ অ্যাপের কোড কপি বা ডাউনলোড হয়ে যাবে:
+        </p>
+        <div class="mini-btn-row">
+          <button type="button" class="mini-btn blur-click" style="background:linear-gradient(135deg,#00e676,#00b862); color:#042814; font-weight:800; border:none;" onclick="copyFullAppHTMLCode()">
+            📋 Copy Full HTML
+          </button>
+          <button type="button" class="mini-btn blur-click" style="background:linear-gradient(135deg,#3b82f6,#8b5cf6); color:#fff; font-weight:700; border:none;" onclick="downloadFullAppHTMLFile()">
+            ⬇ Download .html
+          </button>
+        </div>
+      </div>
+
+      <!-- BACKUP & RESTORE (FIXED FOR APK & FILE MANAGER) -->
+      <div class="settings-group">
+        <div class="settings-group-title">💾 Data Backup & Restore (ফাইল ম্যানেজার ও APK)</div>
+        <div class="mini-btn-row" style="margin-bottom:8px;">
+          <button type="button" class="mini-btn blur-click" onclick="exportBackupFile()">⬇ Save Backup (.json)</button>
+          <button type="button" class="mini-btn blur-click" onclick="shareBackupToFileManager()">📤 Share to Phone Files</button>
+        </div>
+        <div class="mini-btn-row">
+          <label class="mini-btn blur-click" style="cursor:pointer;">
+            📂 Restore File (.json)
+            <input type="file" accept=".json,application/json,text/plain" style="display:none;" onchange="importBackupFile(event)" />
+          </label>
+          <button type="button" class="mini-btn blur-click" onclick="toggleTextBackupBox()">📋 Copy/Paste Backup</button>
+        </div>
+
+        <div id="textBackupAreaWrap" style="display:none; margin-top:10px;">
+          <textarea id="backupJsonTextarea" class="field-input" rows="3" style="font-size:11px; font-family:monospace;" placeholder="Backup code will appear here, or paste backup code here to restore..."></textarea>
+          <div class="mini-btn-row" style="margin-top:6px;">
+            <button type="button" class="mini-btn blur-click" style="color:#00e676;" onclick="copyBackupTextData()">📋 Copy Backup Text</button>
+            <button type="button" class="mini-btn blur-click" style="color:#ff6ca8;" onclick="restoreFromBackupTextData()">📥 Restore from Text</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- CATEGORY & LOGO MANAGERS -->
+      <div class="settings-group">
+        <div class="settings-group-title">🏷️ Customize Categories & Logos</div>
+        <div class="mini-btn-row">
+          <button type="button" class="mini-btn blur-click" onclick="openItemManager('category')">🏷️ Manage Categories</button>
+          <button type="button" class="mini-btn blur-click" onclick="openItemManager('logo')">🎨 Manage Logos</button>
+        </div>
+      </div>
+
+      <!-- THEME & MONTHLY BUDGET -->
+      <div class="settings-group">
+        <div class="settings-group-title">🌓 Appearance & Monthly Budget</div>
+        <div class="mini-btn-row" style="margin-bottom:10px;">
+          <button type="button" class="mini-btn blur-click" onclick="setAppTheme('dark')">🌙 Dark Mode</button>
+          <button type="button" class="mini-btn blur-click" onclick="setAppTheme('light')">☀️ Light Mode</button>
+        </div>
+        <div style="display:flex; gap:8px; align-items:center;">
+          <input type="number" class="field-input" id="budgetLimitInput" placeholder="Monthly Budget (e.g. 5000)" style="padding:9px 12px;" />
+          <button type="button" class="mini-btn blur-click" style="flex-shrink:0; background:#00e676; color:#042814; font-weight:800;" onclick="saveBudgetLimit()">Save</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 7: CATEGORY & LOGO ITEM MANAGER (Add, Edit, Delete with Confirm)
+       ========================================================================= -->
+  <div class="modal-overlay" id="itemManagerModal" style="z-index: 160;">
+    <div class="modal-sheet">
+      <div class="modal-top">
+        <div class="modal-heading" id="itemManagerTitle">Manage Categories</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('itemManagerModal')">✕</button>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-bottom:10px;">
+        <input type="text" class="field-input" id="itemManagerInput" placeholder="Add new..." />
+        <button type="button" class="primary-action-btn blur-click" style="width:auto; padding:0 18px;" onclick="addItemInManager()">+ Add</button>
+      </div>
+
+      <div id="logoGalleryUploadRow" style="display:none; margin-bottom:12px;">
+        <label class="secondary-action-btn blur-click" style="display:flex; align-items:center; justify-content:center; gap:8px; cursor:pointer; padding:10px;">
+          <span>🖼️ Upload Custom Logo Image from Phone</span>
+          <input type="file" accept="image/*" style="display:none;" onchange="uploadCustomLogoImage(event)" />
+        </label>
+      </div>
+
+      <div id="itemManagerList" style="display:flex; flex-direction:column; gap:8px; max-height:300px; overflow-y:auto;"></div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       MODAL 8: QUICK EXPORT / COPY HELPER (From Bell / Wallet Icon)
+       ========================================================================= -->
+  <div class="modal-overlay" id="quickExportModal">
+    <div class="modal-sheet" style="max-width:360px; text-align:center;">
+      <div class="modal-top">
+        <div class="modal-heading">⚡ Quick Export & Info</div>
+        <button class="modal-close-btn blur-click" onclick="closeModal('quickExportModal')">✕</button>
+      </div>
+      <p style="font-size:13px; color:var(--text-secondary); margin-bottom:16px; line-height:1.45;">
+        আপনার <b>My Expense</b> অ্যাপটি এখন একদম প্রস্তুত! নিচের বাটনে ক্লিক করে এক ক্লিকে সম্পূর্ণ কোড কপি বা ডাউনলোড করে GitHub-এ আপলোড করতে পারেন:
+      </p>
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        <button type="button" class="primary-action-btn blur-click" onclick="copyFullAppHTMLCode()">
+          📋 ১-ক্লিকে সম্পূর্ণ HTML কোড কপি করুন
+        </button>
+        <button type="button" class="secondary-action-btn blur-click" onclick="downloadFullAppHTMLFile()">
+          ⬇ Download index.html File
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // STATE & INITIALIZATION
+    // =========================================================================
+    const STORAGE_KEY = 'my_expense_premium_v10';
+
+    const DEFAULT_STATE = {
+      theme: 'dark',
+      monthlyBudget: 5000,
+      categories: [
+        'Income • Bank Transfer',
+        'Shopping',
+        'Transport',
+        'Food & Dining',
+        'Bills & Utilities',
+        'Salary',
+        'Medical & Health',
+        'Entertainment'
+      ],
+      logos: [
+        { id: 'lg1', value: '⇄', type: 'symbol' },
+        { id: 'lg2', value: '🛒', type: 'symbol' },
+        { id: 'lg3', value: '📥', type: 'symbol' },
+        { id: 'lg4', value: '🍴', type: 'symbol' },
+        { id: 'lg5', value: '⛽', type: 'symbol' },
+        { id: 'lg6', value: '💡', type: 'symbol' },
+        { id: 'lg7', value: '💊', type: 'symbol' },
+        { id: 'lg8', value: '🎬', type: 'symbol' },
+        { id: 'lg9', value: '💰', type: 'symbol' },
+        { id: 'lg10', value: '🏠', type: 'symbol' }
+      ],
+      transactions: []
+    };
+
+    let state = loadAppState();
+    let selectedLogoValue = state.logos[0]?.value || '🛒';
+    let pendingConfirmCallback = null;
+    let activeManagerMode = 'category';
+
+    // Calendar Picker State
+    let calCurrentYear = new Date().getFullYear();
+    let calCurrentMonth = new Date().getMonth();
+    let calTargetInputId = 'txDateValue';
+    let calTargetTextId = 'txDateFormattedText';
+    let calTriggerFilter = false;
+
+    function loadAppState() {
+      try {
+        const saved = localStorage.getItem(STORAGE_KEY);
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          return {
+            ...DEFAULT_STATE,
+            ...parsed,
+            categories: Array.isArray(parsed.categories) && parsed.categories.length ? parsed.categories : DEFAULT_STATE.categories,
+            logos: Array.isArray(parsed.logos) && parsed.logos.length ? parsed.logos : DEFAULT_STATE.logos,
+            transactions: Array.isArray(parsed.transactions) ? parsed.transactions : []
+          };
+        }
+      } catch (e) {}
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
+
+    function saveAppState() {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      } catch (e) {
+        showToast('Storage limit reached!');
+      }
+    }
+
+    // =========================================================================
+    // FORMATTING & DATE HELPERS
+    // =========================================================================
+    function formatINR(val) {
+      const n = Number(val || 0);
+      return n.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    }
+
+    function getTodayISO() {
+      const now = new Date();
+      return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    }
+
+    function formatDisplayDate(isoStr) {
+      if (!isoStr) return '';
+      const parts = isoStr.split('-');
+      if (parts.length !== 3) return isoStr;
+      const d = new Date(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2]));
+      if (isNaN(d)) return isoStr;
+      return d.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function isDateInPeriod(isoDate, periodKey) {
+      if (!isoDate) return false;
+      if (periodKey === 'ALL_TIME' || periodKey === 'ALL') return true;
+
+      const now = new Date();
+      const currY = now.getFullYear();
+      const currM = now.getMonth();
+
+      const parts = isoDate.split('-');
+      const y = Number(parts[0]);
+      const m = Number(parts[1]) - 1;
+      const day = Number(parts[2]);
+
+      if (periodKey === 'THIS_MONTH') {
+        return y === currY && m === currM;
+      }
+      if (periodKey === 'LAST_MONTH') {
+        const lastMDate = new Date(currY, currM - 1, 1);
+        return y === lastMDate.getFullYear() && m === lastMDate.getMonth();
+      }
+      if (periodKey === 'THIS_WEEK') {
+        const txD = new Date(y, m, day);
+        const diffDays = (now - txD) / (1000 * 60 * 60 * 24);
+        return diffDays >= -1 && diffDays <= 7;
+      }
+      // Specific YYYY-MM
+      if (periodKey.length === 7) {
+        return isoDate.startsWith(periodKey);
+      }
+      return true;
+    }
+
+    // =========================================================================
+    // RENDER DASHBOARD & SUMMARY
+    // =========================================================================
+    function renderDashboard() {
+      // Apply theme
+      document.body.classList.toggle('light-mode', state.theme === 'light');
+      document.getElementById('metaThemeColor').content = state.theme === 'light' ? '#edf2fa' : '#060d1f';
+      document.getElementById('budgetLimitInput').value = state.monthlyBudget || 5000;
+
+      const period = document.getElementById('dashboardPeriodSelect').value;
+      const periodLabels = {
+        THIS_MONTH: 'this month',
+        LAST_MONTH: 'last month',
+        THIS_WEEK: 'this week',
+        ALL_TIME: 'all time'
+      };
+      const stripLabels = {
+        THIS_MONTH: 'This Month',
+        LAST_MONTH: 'Last Month',
+        THIS_WEEK: 'This Week',
+        ALL_TIME: 'Total'
+      };
+
+      let allTimeIncome = 0;
+      let allTimeExpense = 0;
+      let periodIncome = 0;
+      let periodExpense = 0;
+
+      state.transactions.forEach(tx => {
+        const amt = Number(tx.amount) || 0;
+        if (tx.type === 'income') allTimeIncome += amt;
+        else allTimeExpense += amt;
+
+        if (isDateInPeriod(tx.date, period)) {
+          if (tx.type === 'income') periodIncome += amt;
+          else periodExpense += amt;
+        }
+      });
+
+      const netAllTime = allTimeIncome - allTimeExpense;
+      const netPeriod = periodIncome - periodExpense;
+
+      // Display balance based on selected period (or net balance)
+      const displayBalance = period === 'ALL_TIME' ? netAllTime : netPeriod;
+      document.getElementById('mainBalanceAmount').textContent = (displayBalance < 0 ? '-₹ ' : '₹ ') + formatINR(Math.abs(displayBalance));
+
+      const deltaEl = document.getElementById('mainBalanceDelta');
+      if (netPeriod >= 0) {
+        deltaEl.textContent = `↑ +₹ ${formatINR(netPeriod)}`;
+        deltaEl.className = 'delta-val';
+      } else {
+        deltaEl.textContent = `↓ -₹ ${formatINR(Math.abs(netPeriod))}`;
+        deltaEl.className = 'delta-val negative';
+      }
+      document.getElementById('mainBalancePeriodLabel').textContent = periodLabels[period] || 'this month';
+
+      // Bottom 4-Column Summary Strip
+      const prefix = stripLabels[period] || 'This Month';
+      document.getElementById('sumIncomeLabel').textContent = `${prefix} Income`;
+      document.getElementById('sumExpenseLabel').textContent = `${prefix} Expense`;
+      document.getElementById('sumIncomeValue').textContent = `₹ ${formatINR(periodIncome)}`;
+      document.getElementById('sumExpenseValue').textContent = `₹ ${formatINR(periodExpense)}`;
+      document.getElementById('sumSavingsValue').textContent = (netPeriod < 0 ? '-₹ ' : '₹ ') + formatINR(Math.abs(netPeriod));
+
+      const budgetBase = periodIncome > 0 ? periodIncome : (Number(state.monthlyBudget) || 5000);
+      const budgetPct = budgetBase > 0 ? Math.min(100, Math.round((periodExpense / budgetBase) * 100)) : 0;
+      document.getElementById('sumBudgetValue').textContent = `${budgetPct}%`;
+
+      // Render Recent Transactions (Top 6 sorted by date)
+      const sorted = [...state.transactions].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      renderTransactionRows(sorted.slice(0, 6), 'recentTxList');
+
+      populateCategoryAndMonthSelectors();
+    }
+
+    function renderIconBadgeContent(logoVal) {
+      if (!logoVal) return '🛒';
+      if (logoVal.startsWith('data:image')) {
+        return `<img src="${logoVal}" alt="logo" style="width:100%;height:100%;object-fit:cover;" />`;
+      }
+      if (logoVal === '📥') {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>`;
+      }
+      if (logoVal === '🛒') {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>`;
+      }
+      if (logoVal === '⇄') {
+        return `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"><polyline points="17 1 21 5 17 9"/><path d="M3 11V9a4 4 0 0 1 4-4h14"/><polyline points="7 23 3 19 7 15"/><path d="M21 13v2a4 4 0 0 1-4 4H3"/></svg>`;
+      }
+      return `<span>${logoVal}</span>`;
+    }
+
+    function renderTransactionRows(list, containerId) {
+      const container = document.getElementById(containerId);
+      if (!list || list.length === 0) {
+        container.innerHTML = `
+          <div style="text-align:center; padding: 26px 10px; color: var(--text-secondary); font-size: 13px;">
+            No transactions yet. Tap <b>+ Income</b> or <b>− Expense</b> above to add!
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = list.map(tx => {
+        const isInc = tx.type === 'income';
+        const badgeClass = isInc ? 'income-badge' : 'expense-badge';
+        const amtClass = isInc ? 'income-amt' : 'expense-amt';
+        const sign = isInc ? '+' : '-';
+        return `
+          <div class="tx-row blur-click" onclick="openTxModal('${tx.type}', '${tx.id}')">
+            <div class="tx-left">
+              <div class="tx-circle-badge ${badgeClass}">
+                ${renderIconBadgeContent(tx.logo)}
+              </div>
+              <div class="tx-details">
+                <div class="tx-item-title">${escapeHtml(tx.title)}</div>
+                <div class="tx-item-cat">${escapeHtml(tx.category)}</div>
+                <div class="tx-item-date">${formatDisplayDate(tx.date)}</div>
+              </div>
+            </div>
+            <div class="tx-right">
+              <div class="tx-item-amount ${amtClass}">${sign} ₹ ${formatINR(tx.amount)}</div>
+              <button type="button" class="tx-trash-btn blur-click" onclick="event.stopPropagation(); confirmDeleteTransaction('${tx.id}')" aria-label="Delete">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                  <line x1="10" y1="11" x2="10" y2="17"></line>
+                  <line x1="14" y1="11" x2="14" y2="17"></line>
+                </svg>
+              </button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function escapeHtml(str) {
+      return String(str || '').replace(/[&<>"']/g, m => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m]));
+    }
+
+    // =========================================================================
+    // ADD / EDIT TRANSACTION & VISUAL CALENDAR PICKER
+    // =========================================================================
+    function populateCategoryAndMonthSelectors() {
+      const catOptions = state.categories.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+      document.getElementById('txCategorySelect').innerHTML = catOptions;
+      document.getElementById('filterCategorySelect').innerHTML = `<option value="ALL">All Categories (সব ক্যাটাগরি)</option>` + catOptions;
+
+      // Dynamic Months from transactions
+      const uniqueMonths = new Set();
+      state.transactions.forEach(t => {
+        if (t.date && t.date.length >= 7) uniqueMonths.add(t.date.substring(0, 7));
+      });
+      const monthSelect = document.getElementById('filterMonthSelect');
+      const currentVal = monthSelect.value || 'ALL';
+      let mHtml = `
+        <option value="ALL">🗓️ All Months (সব মাস)</option>
+        <option value="THIS_MONTH">This Month (এই মাস)</option>
+        <option value="LAST_MONTH">Last Month (আগের মাস)</option>
+      `;
+      Array.from(uniqueMonths).sort().reverse().forEach(ym => {
+        const [y, m] = ym.split('-');
+        const label = new Date(Number(y), Number(m) - 1, 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' });
+        mHtml += `<option value="${ym}">${label}</option>`;
+      });
+      monthSelect.innerHTML = mHtml;
+      if ([...monthSelect.options].some(o => o.value === currentVal)) {
+        monthSelect.value = currentVal;
+      }
+    }
+
+    function openTxModal(type, editId = null) {
+      populateCategoryAndMonthSelectors();
+      document.getElementById('txTypeField').value = type;
+      document.getElementById('txEditId').value = editId || '';
+
+      const titleHeading = document.getElementById('txModalTitle');
+      const saveBtn = document.getElementById('txSaveBtn');
+
+      if (type === 'income') {
+        titleHeading.textContent = editId ? '✏️ Edit Income' : '➕ Add Income (আয়)';
+        saveBtn.className = 'primary-action-btn blur-click';
+      } else {
+        titleHeading.textContent = editId ? '✏️ Edit Expense' : '➖ Add Expense (খরচ)';
+        saveBtn.className = 'primary-action-btn pink-btn blur-click';
+      }
+
+      if (editId) {
+        const found = state.transactions.find(t => t.id === editId);
+        if (found) {
+          document.getElementById('txTitleInput').value = found.title;
+          document.getElementById('txAmountInput').value = found.amount;
+          document.getElementById('txDateValue').value = found.date;
+          document.getElementById('txDateFormattedText').textContent = formatDisplayDate(found.date);
+          document.getElementById('txCategorySelect').value = found.category;
+          selectedLogoValue = found.logo || state.logos[0].value;
+        }
+      } else {
+        document.getElementById('txTitleInput').value = '';
+        document.getElementById('txAmountInput').value = '';
+        const todayIso = getTodayISO();
+        document.getElementById('txDateValue').value = todayIso;
+        document.getElementById('txDateFormattedText').textContent = formatDisplayDate(todayIso);
+        if (type === 'income') {
+          document.getElementById('txCategorySelect').value = state.categories[0];
+          selectedLogoValue = '📥';
+        } else {
+          document.getElementById('txCategorySelect').value = state.categories[1] || state.categories[0];
+          selectedLogoValue = '🛒';
+        }
+      }
+
+      renderLogoPickerTiles();
+      openModal('txModal');
+    }
+
+    function renderLogoPickerTiles() {
+      const grid = document.getElementById('txLogoGrid');
+      grid.innerHTML = state.logos.map((lg, idx) => {
+        const active = lg.value === selectedLogoValue ? 'selected' : '';
+        return `
+          <div class="logo-tile blur-click ${active}" onclick="selectLogoTile(${idx})">
+            ${renderIconBadgeContent(lg.value)}
+          </div>
+        `;
+      }).join('');
+    }
+
+    function selectLogoTile(idx) {
+      if (state.logos[idx]) {
+        selectedLogoValue = state.logos[idx].value;
+        renderLogoPickerTiles();
+      }
+    }
+
+    function saveTransaction() {
+      const editId = document.getElementById('txEditId').value;
+      const type = document.getElementById('txTypeField').value;
+      const rawTitle = document.getElementById('txTitleInput').value.trim();
+      const amount = parseFloat(document.getElementById('txAmountInput').value);
+      const dateIso = document.getElementById('txDateValue').value || getTodayISO();
+      const category = document.getElementById('txCategorySelect').value || 'General';
+
+      if (!amount || amount <= 0) {
+        showToast('⚠️ অনুগ্রহ করে সঠিক টাকার পরিমাণ লিখুন!');
+        return;
+      }
+
+      const title = rawTitle || (type === 'income' ? 'Income' : category);
+      const txObj = {
+        id: editId || ('tx_' + Date.now()),
+        type,
+        title,
+        amount,
+        date: dateIso,
+        category,
+        logo: selectedLogoValue
+      };
+
+      if (editId) {
+        const idx = state.transactions.findIndex(t => t.id === editId);
+        if (idx > -1) state.transactions[idx] = txObj;
+      } else {
+        state.transactions.unshift(txObj);
+      }
+
+      // Check if user added a past month transaction and switch period if needed or inform them
+      const currYM = getTodayISO().substring(0, 7);
+      const txYM = dateIso.substring(0, 7);
+
+      saveAppState();
+      renderDashboard();
+      if (document.getElementById('viewAllModal').classList.contains('open')) {
+        renderFilteredViewAll();
+      }
+      closeModal('txModal');
+
+      if (txYM !== currYM) {
+        showToast(`✅ Saved for ${formatDisplayDate(dateIso)}!`);
+      } else {
+        showToast(editId ? '✅ Transaction Updated!' : '✅ Transaction Added!');
+      }
+    }
+
+    // =========================================================================
+    // VISUAL CALENDAR LOGIC (Allows picking any past month/date easily)
+    // =========================================================================
+    function openVisualCalendar(inputId, textId, isFilter = false) {
+      calTargetInputId = inputId;
+      calTargetTextId = textId;
+      calTriggerFilter = isFilter;
+
+      const currentVal = document.getElementById(inputId).value || getTodayISO();
+      const parts = currentVal.split('-');
+      if (parts.length === 3) {
+        calCurrentYear = Number(parts[0]);
+        calCurrentMonth = Number(parts[1]) - 1;
+      } else {
+        const now = new Date();
+        calCurrentYear = now.getFullYear();
+        calCurrentMonth = now.getMonth();
+      }
+
+      renderCalendarGrid();
+      openModal('calendarModal');
+    }
+
+    function changeCalendarMonth(delta) {
+      calCurrentMonth += delta;
+      if (calCurrentMonth < 0) {
+        calCurrentMonth = 11;
+        calCurrentYear--;
+      } else if (calCurrentMonth > 11) {
+        calCurrentMonth = 0;
+        calCurrentYear++;
+      }
+      renderCalendarGrid();
+    }
+
+    function renderCalendarGrid() {
+      const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+      document.getElementById('calMonthYearLabel').textContent = `${monthNames[calCurrentMonth]} ${calCurrentYear}`;
+
+      const firstDay = new Date(calCurrentYear, calCurrentMonth, 1).getDay();
+      const daysInMonth = new Date(calCurrentYear, calCurrentMonth + 1, 0).getDate();
+      const selectedIso = document.getElementById(calTargetInputId).value;
+      const todayIso = getTodayISO();
+
+      let html = '';
+      for (let i = 0; i < firstDay; i++) {
+        html += `<div class="cal-day-cell empty"></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const iso = `${calCurrentYear}-${String(calCurrentMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+        const isSel = iso === selectedIso ? 'selected' : '';
+        const isTod = iso === todayIso ? 'today' : '';
+        html += `<button type="button" class="cal-day-cell blur-click ${isTod} ${isSel}" onclick="pickCalendarDate('${iso}')">${d}</button>`;
+      }
+
+      document.getElementById('calDaysGrid').innerHTML = html;
+    }
+
+    function pickCalendarDate(iso) {
+      document.getElementById(calTargetInputId).value = iso;
+      document.getElementById(calTargetTextId).textContent = formatDisplayDate(iso);
+      renderCalendarGrid();
+      if (calTriggerFilter) {
+        renderFilteredViewAll();
+      }
+      setTimeout(() => closeModal('calendarModal'), 150);
+    }
+
+    function selectTodayInCalendar() {
+      pickCalendarDate(getTodayISO());
+    }
+
+    // =========================================================================
+    // VIEW ALL TRANSACTIONS + SEARCH, DATE & CATEGORY FILTER
+    // =========================================================================
+    function openViewAllModal() {
+      populateCategoryAndMonthSelectors();
+      renderFilteredViewAll();
+      openModal('viewAllModal');
+    }
+
+    function resetViewAllFilters() {
+      document.getElementById('filterSearchInput').value = '';
+      document.getElementById('filterDateValue').value = '';
+      document.getElementById('filterDateText').textContent = 'All Dates';
+      document.getElementById('filterCategorySelect').value = 'ALL';
+      document.getElementById('filterMonthSelect').value = 'ALL';
+      renderFilteredViewAll();
+    }
+
+    function renderFilteredViewAll() {
+      const query = document.getElementById('filterSearchInput').value.trim().toLowerCase();
+      const exactDate = document.getElementById('filterDateValue').value;
+      const catFilter = document.getElementById('filterCategorySelect').value;
+      const monthFilter = document.getElementById('filterMonthSelect').value;
+
+      let totalInc = 0;
+      let totalExp = 0;
+
+      const sorted = [...state.transactions].sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+      const filtered = sorted.filter(tx => {
+        if (query) {
+          const matchTitle = (tx.title || '').toLowerCase().includes(query);
+          const matchCat = (tx.category || '').toLowerCase().includes(query);
+          if (!matchTitle && !matchCat) return false;
+        }
+        if (exactDate && tx.date !== exactDate) return false;
+        if (catFilter !== 'ALL' && tx.category !== catFilter) return false;
+        if (monthFilter !== 'ALL' && !isDateInPeriod(tx.date, monthFilter)) return false;
+
+        if (tx.type === 'income') totalInc += Number(tx.amount) || 0;
+        else totalExp += Number(tx.amount) || 0;
+        return true;
+      });
+
+      renderTransactionRows(filtered, 'viewAllTxList');
+      document.getElementById('filterTotalIncome').textContent = `₹ ${formatINR(totalInc)}`;
+      document.getElementById('filterTotalExpense').textContent = `₹ ${formatINR(totalExp)}`;
+      document.getElementById('filterTotalCount').textContent = filtered.length;
+    }
+
+    // =========================================================================
+    // CATEGORY BREAKDOWN REPORTS MODAL
+    // =========================================================================
+    function openReportsModal() {
+      renderCategoryReport();
+      openModal('reportsModal');
+    }
+
+    function renderCategoryReport() {
+      const period = document.getElementById('reportPeriodSelect').value;
+      const totalsByCat = {};
+      let grandExpense = 0;
+
+      state.transactions.forEach(tx => {
+        if (tx.type === 'expense' && isDateInPeriod(tx.date, period)) {
+          const amt = Number(tx.amount) || 0;
+          totalsByCat[tx.category] = (totalsByCat[tx.category] || 0) + amt;
+          grandExpense += amt;
+        }
+      });
+
+      const container = document.getElementById('categoryReportContainer');
+      const entries = Object.entries(totalsByCat).sort((a, b) => b[1] - a[1]);
+
+      if (entries.length === 0) {
+        container.innerHTML = `<div style="text-align:center; padding:24px; color:var(--text-secondary); font-size:13px;">No expenses recorded for this period.</div>`;
+        return;
+      }
+
+      container.innerHTML = entries.map(([cat, amt]) => {
+        const pct = grandExpense > 0 ? Math.round((amt / grandExpense) * 100) : 0;
+        return `
+          <div class="blur-click" onclick="filterBySpecificCategory('${escapeHtml(cat)}')" style="background:var(--input-bg); border:1px solid var(--card-border); border-radius:14px; padding:12px;">
+            <div style="display:flex; justify-content:space-between; font-size:13.5px; font-weight:700; margin-bottom:6px;">
+              <span>${escapeHtml(cat)}</span>
+              <span style="color:#ff388c;">₹ ${formatINR(amt)} (${pct}%)</span>
+            </div>
+            <div style="width:100%; height:7px; background:rgba(255,255,255,0.08); border-radius:99px; overflow:hidden;">
+              <div style="width:${pct}%; height:100%; background:linear-gradient(90deg, #ff2e93, #a855f7); border-radius:99px;"></div>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function filterBySpecificCategory(catName) {
+      closeModal('reportsModal');
+      openViewAllModal();
+      document.getElementById('filterCategorySelect').value = catName;
+      renderFilteredViewAll();
+    }
+
+    // =========================================================================
+    // UNIVERSAL CONFIRMATION DIALOG (Equal-Sized Cancel & Delete Buttons)
+    // =========================================================================
+    function askDeleteConfirmation(title, desc, onConfirm) {
+      document.getElementById('confirmDialogTitle').textContent = title;
+      document.getElementById('confirmDialogDesc').textContent = desc;
+      pendingConfirmCallback = onConfirm;
+      openModal('confirmDialogModal');
+    }
+
+    document.getElementById('confirmDialogYesBtn').addEventListener('click', function () {
+      if (typeof pendingConfirmCallback === 'function') {
+        pendingConfirmCallback();
+      }
+      pendingConfirmCallback = null;
+      closeModal('confirmDialogModal');
+    });
+
+    function confirmDeleteTransaction(txId) {
+      const tx = state.transactions.find(t => t.id === txId);
+      const label = tx ? `"${tx.title}" (₹ ${formatINR(tx.amount)})` : 'এই ট্রানজেকশনটি';
+      askDeleteConfirmation(
+        'Delete Transaction?',
+        `আপনি কি নিশ্চিতভাবে ${label} ডিলিট করতে চান?`,
+        () => {
+          state.transactions = state.transactions.filter(t => t.id !== txId);
+          saveAppState();
+          renderDashboard();
+          if (document.getElementById('viewAllModal').classList.contains('open')) {
+            renderFilteredViewAll();
+          }
+          showToast('🗑 Transaction Deleted');
+        }
+      );
+    }
+
+    function confirmClearAll() {
+      if (state.transactions.length === 0) {
+        showToast('কোনো ট্রানজেকশন নেই!');
+        return;
+      }
+      askDeleteConfirmation(
+        'Clear All Transactions?',
+        'আপনি কি নিশ্চিতভাবে আপনার সমস্ত আয় ও খরচের হিসাব মুছে ফেলতে চান?',
+        () => {
+          state.transactions = [];
+          saveAppState();
+          renderDashboard();
+          showToast('🗑 All Transactions Cleared');
+        }
+      );
+    }
+
+    // =========================================================================
+    // CATEGORY & LOGO MANAGER (With Edit & Confirmed Delete)
+    // =========================================================================
+    function openItemManager(mode) {
+      activeManagerMode = mode;
+      document.getElementById('itemManagerTitle').textContent = mode === 'category' ? '🏷️ Manage Categories' : '🎨 Manage Logos';
+      document.getElementById('itemManagerInput').placeholder = mode === 'category' ? 'New category name...' : 'Enter emoji/icon (e.g. 🍕, 🚌)...';
+      document.getElementById('logoGalleryUploadRow').style.display = mode === 'logo' ? 'block' : 'none';
+      renderItemManagerList();
+      openModal('itemManagerModal');
+    }
+
+    function renderItemManagerList() {
+      const listEl = document.getElementById('itemManagerList');
+      if (activeManagerMode === 'category') {
+        listEl.innerHTML = state.categories.map((cat, idx) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:var(--input-bg); border:1px solid var(--card-border); padding:10px 12px; border-radius:12px;">
+            <span style="font-size:13.5px; font-weight:600;">${escapeHtml(cat)}</span>
+            <div style="display:flex; gap:6px;">
+              <button type="button" class="tx-trash-btn blur-click" onclick="confirmDeleteManagerItem(${idx})" title="Delete">🗑</button>
+            </div>
+          </div>
+        `).join('');
+      } else {
+        listEl.innerHTML = state.logos.map((lg, idx) => `
+          <div style="display:flex; align-items:center; justify-content:space-between; background:var(--input-bg); border:1px solid var(--card-border); padding:8px 12px; border-radius:12px;">
+            <div style="width:38px; height:38px; border-radius:50%; background:#ff2e93; display:flex; align-items:center; justify-content:center; color:#fff; overflow:hidden;">
+              ${renderIconBadgeContent(lg.value)}
+            </div>
+            <button type="button" class="tx-trash-btn blur-click" onclick="confirmDeleteManagerItem(${idx})" title="Delete">🗑</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function addItemInManager() {
+      const val = document.getElementById('itemManagerInput').value.trim();
+      if (!val) return;
+      if (activeManagerMode === 'category') {
+        state.categories.push(val);
+      } else {
+        state.logos.push({ id: 'lg_' + Date.now(), value: val, type: 'symbol' });
+      }
+      document.getElementById('itemManagerInput').value = '';
+      saveAppState();
+      renderItemManagerList();
+      renderDashboard();
+      showToast('✅ Added Successfully!');
+    }
+
+    function uploadCustomLogoImage(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        state.logos.push({ id: 'lg_' + Date.now(), value: e.target.result, type: 'image' });
+        saveAppState();
+        renderItemManagerList();
+        showToast('✅ Custom Logo Added!');
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function confirmDeleteManagerItem(idx) {
+      const isCat = activeManagerMode === 'category';
+      const arr = isCat ? state.categories : state.logos;
+      if (arr.length <= 1) {
+        showToast('অন্তত ১টি আইটেম রাখা আবশ্যক!');
+        return;
+      }
+      const itemName = isCat ? `"${arr[idx]}" ক্যাটাগরিটি` : 'এই লোগোটি';
+      askDeleteConfirmation(
+        isCat ? 'Delete Category?' : 'Delete Logo?',
+        `আপনি কি নিশ্চিতভাবে ${itemName} ডিলিট করতে চান?`,
+        () => {
+          arr.splice(idx, 1);
+          saveAppState();
+          renderItemManagerList();
+          renderDashboard();
+          showToast('🗑 Deleted!');
+        }
+      );
+    }
+
+    // =========================================================================
+    // BACKUP & RESTORE (Works in Browser, File Manager Share & APK WebView)
+    // =========================================================================
+    function exportBackupFile() {
+      const jsonStr = JSON.stringify(state, null, 2);
+      const fileName = `MyExpense_Backup_${getTodayISO()}.json`;
+      try {
+        const blob = new Blob([jsonStr], { type: 'application/octet-stream' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = fileName;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 2000);
+        // Also populate text box automatically so APK users see it immediately
+        document.getElementById('textBackupAreaWrap').style.display = 'block';
+        document.getElementById('backupJsonTextarea').value = jsonStr;
+        showToast('✅ ডাউনলোড ফোল্ডারে সেভ হয়েছে!');
+      } catch (e) {
+        toggleTextBackupBox();
+      }
+    }
+
+    async function shareBackupToFileManager() {
+      const jsonStr = JSON.stringify(state, null, 2);
+      const fileName = `MyExpense_Backup_${getTodayISO()}.json`;
+      try {
+        if (navigator.share) {
+          const file = new File([jsonStr], fileName, { type: 'application/json' });
+          if (navigator.canShare && navigator.canShare({ files: [file] })) {
+            await navigator.share({
+              title: 'My Expense Backup',
+              text: 'My Expense App Backup File',
+              files: [file]
+            });
+            showToast('✅ ফাইল শেয়ার/সেভ সম্পন্ন!');
+            return;
+          }
+          await navigator.share({
+            title: 'My Expense Backup Code',
+            text: jsonStr
+          });
+          showToast('✅ ব্যাকআপ শেয়ার সম্পন্ন!');
+          return;
+        }
+      } catch (err) {}
+      exportBackupFile();
+    }
+
+    function toggleTextBackupBox() {
+      const wrap = document.getElementById('textBackupAreaWrap');
+      const isHidden = wrap.style.display === 'none';
+      wrap.style.display = isHidden ? 'block' : 'none';
+      if (isHidden) {
+        document.getElementById('backupJsonTextarea').value = JSON.stringify(state, null, 2);
+      }
+    }
+
+    function copyBackupTextData() {
+      const area = document.getElementById('backupJsonTextarea');
+      area.value = JSON.stringify(state, null, 2);
+      copyStringToClipboard(area.value, '✅ ব্যাকআপ কোড কপি হয়েছে!');
+    }
+
+    function restoreFromBackupTextData() {
+      const raw = document.getElementById('backupJsonTextarea').value.trim();
+      if (!raw) {
+        showToast('⚠️ আগে ব্যাকআপ কোড পেস্ট করুন!');
+        return;
+      }
+      applyRestoredJson(raw);
+    }
+
+    function importBackupFile(event) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        applyRestoredJson(e.target.result);
+      };
+      reader.readAsText(file);
+    }
+
+    function applyRestoredJson(rawJson) {
+      try {
+        const parsed = JSON.parse(rawJson);
+        if (parsed && Array.isArray(parsed.transactions)) {
+          state = {
+            ...DEFAULT_STATE,
+            ...parsed
+          };
+          saveAppState();
+          renderDashboard();
+          closeModal('settingsModal');
+          showToast('✅ সফলভাবে ব্যাকআপ রিস্টোর হয়েছে!');
+        } else {
+          showToast('⚠️ ভুল ব্যাকআপ ফাইল!');
+        }
+      } catch (e) {
+        showToast('⚠️ ব্যাকআপ কোড সঠিক নয়!');
+      }
+    }
+
+    // =========================================================================
+    // 1-CLICK FULL HTML CODE COPY & FILE DOWNLOAD (NO MANUAL SELECTION NEEDED!)
+    // =========================================================================
+    function getCompleteCleanHTML() {
+      return '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+    }
+
+    function copyFullAppHTMLCode() {
+      const fullCode = getCompleteCleanHTML();
+      copyStringToClipboard(fullCode, '✅ সম্পূর্ণ অ্যাপের কোড কপি হয়েছে! এবার GitHub-এ পেস্ট করুন।');
+    }
+
+    function downloadFullAppHTMLFile() {
+      const fullCode = getCompleteCleanHTML();
+      const blob = new Blob([fullCode], { type: 'text/html;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'index.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(() => URL.revokeObjectURL(url), 2000);
+      showToast('⬇ index.html ডাউনলোড শুরু হয়েছে!');
+    }
+
+    function copyStringToClipboard(str, successMsg) {
+      const temp = document.createElement('textarea');
+      temp.value = str;
+      temp.style.position = 'fixed';
+      temp.style.left = '-9999px';
+      document.body.appendChild(temp);
+      temp.focus();
+      temp.select();
+      try {
+        document.execCommand('copy');
+        showToast(successMsg);
+      } catch (err) {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(str).then(() => showToast(successMsg));
+        }
+      }
+      document.body.removeChild(temp);
+    }
+
+    // =========================================================================
+    // THEME, BUDGET & UI HELPERS
+    // =========================================================================
+    function setAppTheme(mode) {
+      state.theme = mode;
+      saveAppState();
+      renderDashboard();
+      showToast(mode === 'light' ? '☀️ Light Mode Activated' : '🌙 Dark Mode Activated');
+    }
+
+    function saveBudgetLimit() {
+      const val = parseFloat(document.getElementById('budgetLimitInput').value);
+      if (val && val > 0) {
+        state.monthlyBudget = val;
+        saveAppState();
+        renderDashboard();
+        showToast('✅ Monthly Budget Saved!');
+      }
+    }
+
+    function openModal(id) {
+      document.getElementById(id).classList.add('open');
+    }
+
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+
+    function activateNav(tab) {
+      document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+      if (tab === 'home') document.getElementById('navTabHome').classList.add('active');
+    }
+
+    function showToast(msg) {
+      const t = document.getElementById('toastBanner');
+      t.textContent = msg;
+      t.classList.add('show');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+    }
+
+    // OriginOS Frosted Blur Ripple Effect Handler
+    document.addEventListener('pointerdown', function (e) {
+      const target = e.target.closest('.blur-click');
+      if (!target) return;
+      const rect = target.getBoundingClientRect();
+      const ripple = document.createElement('span');
+      ripple.className = 'origin-ripple';
+      const size = Math.max(rect.width, rect.height);
+      ripple.style.width = ripple.style.height = size + 'px';
+      ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+      ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+      target.appendChild(ripple);
+      setTimeout(() => ripple.remove(), 620);
+    });
+
+    // Initialize App on Load
+    renderDashboard();
+  </script>
+</body>
+</html>
