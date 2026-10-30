@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#090d16">
+<meta name="description" content="Cash-IQ - Track your income, expenses, savings and budget in one simple app.">
+<title>Cash-IQ | Smart Expense Tracker</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  font-family:Arial,sans-serif;
+  background:#090d16;
+  color:#f5f7fa;
+  line-height:1.6;
+}
+a{text-decoration:none;color:inherit}
+.container{width:90%;max-width:1100px;margin:auto}
+header{
+  padding:20px 0;
+  border-bottom:1px solid #202838;
+  position:sticky;top:0;
+  background:#090d16ee;
+  backdrop-filter:blur(12px);
+  z-index:10;
+}
+nav{display:flex;align-items:center;justify-content:space-between}
+.logo{font-size:25px;font-weight:bold}
+.logo span{color:#10d98a}
+nav a{margin-left:22px;color:#aab4c5;font-size:14px}
+nav a:hover{color:#10d98a}
+.hero{
+  padding:85px 0 65px;
+  text-align:center;
+  background:radial-gradient(ellipse at top,#103c303d,transparent 65%);
+}
+.tag{
+  display:inline-block;
+  padding:7px 15px;
+  border:1px solid #176f50;
+  border-radius:30px;
+  color:#24e6a0;
+  font-size:13px;
+}
+.hero h1{
+  font-size:clamp(38px,7vw,65px);
+  line-height:1.15;
+  margin:24px 0;
+}
+.hero h1 span{color:#12d98b}
+.hero p{
+  max-width:590px;
+  margin:0 auto;
+  color:#a5afc1;
+  font-size:17px;
+}
+.buttons{
+  display:flex;justify-content:center;
+  flex-wrap:wrap;gap:14px;margin-top:32px;
+}
+.btn{
+  display:inline-block;
+  padding:14px 25px;
+  border-radius:12px;
+  font-weight:bold;
+}
+.primary{background:#0fd58a;color:#06130e}
+.secondary{border:1px solid #354154;color:white}
+.btn:hover{transform:translateY(-2px)}
+.preview{
+  margin:55px auto 0;
+  max-width:750px;
+  border:1px solid #293446;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:0 20px 70px #00c77b17;
+}
+.preview img{display:block;width:100%;height:auto}
+section{padding:75px 0}
+.section-title{text-align:center;margin-bottom:40px}
+.section-title h2{font-size:34px}
+.section-title p{color:#9ca8bb;margin-top:10px}
+.features{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:18px;
+}
+.feature{
+  padding:25px;
+  border:1px solid #263244;
+  background:#111826;
+  border-radius:17px;
+}
+.feature .icon{font-size:30px}
+.feature h3{margin:12px 0 8px}
+.feature p{color:#9ca8bb;font-size:14px}
+.download{
+  text-align:center;
+  background:linear-gradient(135deg,#102a26,#111827);
+  border:1px solid #245342;
+  border-radius:25px;
+  padding:55px 20px;
+}
+.download h2{font-size:35px}
+.download p{color:#b1bdc9;margin:12px auto 25px}
+.version{
+  display:inline-block;
+  color:#20e5a0;
+  border:1px solid #267455;
+  border-radius:30px;
+  padding:5px 14px;
+  margin-bottom:15px;
+  font-size:13px;
+}
+footer{
+  text-align:center;
+  padding:30px 0;
+  border-top:1px solid #202838;
+  color:#8490a3;
+  font-size:13px;
+}
+footer a{color:#19dc98}
+@media(max-width:600px){
+  nav a{margin-left:10px;font-size:12px}
+  .logo{font-size:21px}
+  .hero{padding:65px 0 45px}
+  section{padding:55px 0}
+}
+</style>
+</head>
+
+<body>
+
+<header>
+<div class="container">
+<nav>
+<a href="#" class="logo">Cash-<span>IQ</span></a>
+<div>
+<a href="#features">Features</a>
+<a href="#download">Download</a>
+</div>
+</nav>
+</div>
+</header>
+
+<main>
+
+<div class="hero">
+<div class="container">
+<span class="tag">✦ Smart Personal Finance</span>
+
+<h1>Take Control of<br>Your <span>Money.</span></h1>
+
+<p>
+Track your income, manage expenses, monitor savings
+and understand your finances — all in one place.
+</p>
+
+<div class="buttons">
+<a class="btn primary" href="#download">↓ Download App</a>
+<a class="btn secondary" href="app.html">Open Web App ↗</a>
+</div>
+
+<div class="preview">
+<img src="appicon.png"
+alt="Cash-IQ App Icon"
+onerror="this.style.display='none'">
+<div style="padding:25px;background:#111826">
+<strong style="font-size:22px">Cash-IQ</strong>
+<p style="color:#a5afc1">Your money. Your control.</p>
+</div>
+</div>
+</div>
+</div>
+
+<section id="features">
+<div class="container">
+<div class="section-title">
+<h2>Everything You Need</h2>
+<p>Simple tools to manage your everyday finances.</p>
+</div>
+
+<div class="features">
+
+<div class="feature">
+<div class="icon">💰</div>
+<h3>Income Tracking</h3>
+<p>Keep track of the money you receive and monitor your income.</p>
+</div>
+
+<div class="feature">
+<div class="icon">💸</div>
+<h3>Expense Management</h3>
+<p>Record your spending and understand where your money goes.</p>
+</div>
+
+<div class="feature">
+<div class="icon">📊</div>
+<h3>Financial Reports</h3>
+<p>View your financial activity and understand your spending patterns.</p>
+</div>
+
+<div class="feature">
+<div class="icon">🎯</div>
+<h3>Budget Monitoring</h3>
+<p>Monitor your budget and keep an eye on your spending.</p>
+</div>
+
+<div class="feature">
+<div class="icon">💎</div>
+<h3>Savings Overview</h3>
+<p>See how much money remains after your expenses.</p>
+</div>
+
+<div class="feature">
+<div class="icon">📱</div>
+<h3>Easy to Use</h3>
+<p>A clean and simple interface designed for everyday use.</p>
+</div>
+
+</div>
+</div>
+</section>
+
+<section id="download">
+<div class="container">
+<div class="download">
+<span class="version">Version 1.0.0</span>
+<h2>Get Started with Cash-IQ</h2>
+<p>
+Start managing your money with a simple and convenient
+expense tracking experience.
+</p>
+<a class="btn primary"
+href="https://github.com/ghanashyambag030-hash/cash-IQ/releases/latest">
+↓ Download APK
+</a>
+<p style="font-size:12px;margin-top:18px">
+Android App · GitHub Releases
+</p>
+</div>
+</div>
+</section>
+
+</main>
+
+<footer>
+<div class="container">
+<p><strong>Cash-<a href="#">IQ</a></strong></p>
+<p>Smart Finance. Simple Life.</p>
+<p style="margin-top:12px">
+© <span id="year"></span> Cash-IQ. All rights reserved.
+</p>
+</div>
+</footer>
+
+<script>
+document.getElementById("year").textContent =
+new Date().getFullYear();
+</script>
+
+</body>
+</html>
