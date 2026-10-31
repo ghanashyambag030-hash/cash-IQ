@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p www assets
           cp app.html www/index.html
-          cp app-icon.png assets/icon.png
+          cp appicon.png assets/icon.png
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.ghanashyam.expensetracker",
@@ -49,6 +49,11 @@ jobs:
         run: |
           npx cap add android
           npx cap sync android
+
+      - name: Set app version
+        run: |
+          sed -i 's/versionCode [0-9]*/versionCode 3/' android/app/build.gradle
+          sed -i 's/versionName "[^"]*"/versionName "1.1.1"/' android/app/build.gradle
 
       - name: Align Kotlin dependencies
         run: |
