@@ -36,7 +36,7 @@ jobs:
         run: |
           mkdir -p www assets
           cp app.html www/index.html
-          cp appicon.png assets/icon.png
+          cp app-icon.png assets/icon.png
           cat > capacitor.config.json <<'EOF'
           {
             "appId": "com.ghanashyam.expensetracker",
